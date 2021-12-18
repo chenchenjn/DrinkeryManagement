@@ -1,0 +1,142 @@
+﻿
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+ 	<!-- 包含公共的JSP代码片段 -->
+	
+<title>无线点餐平台</title>
+
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="style/js/jquery.js"></script>
+<script type="text/javascript" src="style/js/page_common.js"></script>
+<link href="style/css/common_style_blue.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="style/css/index_1.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.2.1/d3.min.js"></script>
+</head>
+<body>
+<!-- 页面标题 -->
+<div id="TitleArea">
+	<div id="TitleArea_Head"></div>
+	<div id="TitleArea_Title">
+		<div id="TitleArea_Title_Content">
+			<img border="0" width="13" height="13" src="style/images/title_arrow.gif"/> 餐桌列表
+		</div>
+    </div>
+	<div id="TitleArea_End"></div>
+</div>
+
+
+<!-- 过滤条件 -->
+<!-- <div id="QueryArea">
+	<form action="/wirelessplatform/board.html" method="get">
+		<input type="hidden" name="method" value="search">
+		<input type="text" name="keyword" title="请输入餐桌名称">
+		<input type="submit" value="搜索">
+	</form>
+</div> -->
+
+
+<!-- 主内容区域（数据列表或表单显示） -->
+<div id="MainArea">
+    <table class="MainArea_Content" cellspacing="0" cellpadding="0">
+        <!-- 表头-->
+        <thead>
+            <tr align="center" valign="middle" id="TableTitle">
+				<td>编号</td>
+				<td>桌名</td>
+				<td>状态</td>
+				<td>预定时间</td>
+				<td>操作</td>
+			</tr>
+		</thead>	
+		<!--显示数据列表 -->
+        <tbody id="TableData">
+		
+			<!-- <tr class="TableDetail1">
+				<td align="center">1&nbsp;</td>
+				<td align="center"> 纽约&nbsp;</td>
+				<td align="center">预定</td>
+				<td align="center">2014-12-08 23:31:12</td>
+				<td>
+					<a href="/wirelessplatform/board.html?method=update&id=1&isBook=0" class="FunctionButton">退桌</a>				
+					<a href="/wirelessplatform/board.html?method=delete&id=1" onClick="return delConfirm();"class="FunctionButton">删除</a>				
+				</td>
+			</tr> -->
+        
+        
+        </tbody>
+    </table>
+	
+   <!-- 其他功能超链接 -->
+	<div id="TableTail" align="center">
+		<div class="FunctionButton"><a href="#" onclick='addTable()'>添加</a></div>
+    </div> 
+</div>
+</body>
+<script>
+	const reserveTable = (status, id) => {
+		// console.log('object');
+		axios.post('/tables?status=' + status + '&id=' + id)
+			.then(res => {
+				const { data } = res;
+				console.log(data);
+				if(data.message) {
+					updateTable()
+				}
+			})
+	}
+
+	function addTable() {
+		axios.post('/add_tables')
+			.then(res => {
+				const { data } = res;
+				if (data.message === '添加成功') {
+					updateTable()
+				}
+			})
+	}
+
+	function deleteTable(id) {
+		// console.log(id);
+		// e.preventDefault();
+		axios.delete('/tables?id=' + id)
+			.then(res => {
+				// console.log(res.data);
+				const { data } = res;
+				if (data.message === '删除成功') {
+					updateTable()
+				}
+			})
+	}
+	function updateTable() {
+		axios.get('/tables')
+				.then(res => {
+					const { data } = res;
+					// for (let table of data) {
+					// 	console.log(table);
+					// }
+					d3.select('tbody#TableData')
+						.selectAll('tr')
+						.data(data)
+						.join('tr')
+						.attr('class', 'TableDetail1')
+						.html(d => `
+							<td align="center">${d['id']}&nbsp;</td>
+							<td align="center"> ${d['tableName']}&nbsp;</td>
+							<td align="center">${['空闲', '预约'][d['status']]}</td>
+							<td align="center">${d['reserveTime']}</td>
+							<td>
+								<a href="#" class="FunctionButton"  onClick="reserveTable(${d['status']}, ${d['id']})">${d['status'] === 1 ? '退桌' : '预定'}</a>				
+								<a href="#" onClick="deleteTable(${d['id']})" class="FunctionButton">删除</a>				
+
+							</td>
+						`)
+					// console.log(data);
+				})
+	}
+	updateTable()
+</script>
+</html>
