@@ -1,13 +1,13 @@
-const express = require('express')
+const express = require('express')//express框架
 const fs = require('fs')
 
 // const axios = require('axios');
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://127.0.0.1:27017/menu');
+mongoose.connect('mongodb://127.0.0.1:27017/menu');//连接menu数据库
 const db = mongoose.connection;
 
-const tableSchema = new mongoose.Schema({
+const tableSchema = new mongoose.Schema({//tables数据表
   id: Number,
   tableName: String,
   status: Number,
@@ -16,7 +16,7 @@ const tableSchema = new mongoose.Schema({
 
 const Table = mongoose.model('Table', tableSchema);
 
-const MenuSchema = new mongoose.Schema({
+const MenuSchema = new mongoose.Schema({//menus数据表
   id: Number,
   foodName: String,
   price: Number,
@@ -25,17 +25,17 @@ const MenuSchema = new mongoose.Schema({
 
 const Menu = mongoose.model('Menu', MenuSchema);
 
-const app = express()
+const app = express()//express框架
 
-app.use('/detail/', express.static('./detail/'))
+app.use('/detail/', express.static('./detail/'))//express框架。express 会在静态资源目录detail下查找文件
 
-app.get('/', (req, res) => {
+app.get('/', (req, res) => {//Express框架。 HTTP请求中的请求消息(req)和响应消息(res)
   fs.readFile('./login.html', (err, data) => {
     res.send(data.toString())
   })
 })
 
-const UsersSchema = new mongoose.Schema({
+const UsersSchema = new mongoose.Schema({//users数据表
   id: Number,
   email: String,
   password: String,
@@ -47,7 +47,7 @@ app.get('/login', (req, res) => {
   const { email, password } = req.query;
   Users.find({ email, password }, (err, data) => {
     console.log(email, password, data);
-    if (data.length === 0) {
+    if (data.length === 0) {//去menu库中users表中找，没找到就是(data.length === 0)
       res.send({ message: '登录失败' })
     } else {
       res.send({ message: '登录成功' })
@@ -55,7 +55,7 @@ app.get('/login', (req, res) => {
   })
 })
 
-app.get('/console', function (req, res) {
+app.get('/console', function (req, res) {//Express框架。请求。url后加/console可以直接跳转到index.html主界面
   fs.readFile('./index.html', (err, data) => {
     res.send(data.toString())
   })
@@ -72,7 +72,7 @@ app.get('/tables', (req, res) => {
 app.delete('/tables', (req, res) => {
   const { id } = req.query;
   // console.log(id);
-  Table.deleteOne({ id: parseInt(id) }, err => {
+  Table.deleteOne({ id: parseInt(id) }, err => {//注意类型转换，如这里转换成整形
     if (err) {
       res.send({
         'message': '删除失败'
@@ -88,7 +88,7 @@ app.delete('/tables', (req, res) => {
 app.post('/add_tables', (req, res) => {
   Table.find({}, (err, data) => {
     const ids = data.map(d => d['id'])
-    const maxId = Math.max(...ids)
+    const maxId = Math.max(...ids)//添加桌号时，在已存在的所有桌id中找最大值，加1成为新增id
     const dataByAdd = data.length === 0 ? [
       { id: 0, tableName: '0号桌', status: 0, reserveTime: '' },
     ] : [
@@ -112,7 +112,7 @@ app.post('/tables', (req, res) => {
     })
   } else {
     const date = new Date()
-    const reserveTime = date.toString().split(' ').slice(1, 5).join('-')
+    const reserveTime = date.toString().split(' ').slice(1, 5).join('-')//取当前时间的某一段，并加入分隔符-
     // console.log(reserveTime);
     Table.update({ id }, { $set: { status: 1, reserveTime } }, (err, data) => {
       res.send({'message': '预约成功'})
@@ -150,7 +150,7 @@ app.post('/add_menus', (req, res) => {
   const { foodName, price, vipPrice } = req.query;
   Menu.find({}, (err, data) => {
     const ids = data.map(d => d['id'])
-    const maxId = Math.max(...ids)
+    const maxId = Math.max(...ids)//添加菜品时，在已存在的所有菜id中找最大值，加1成为新增id
     const dataByAdd = data.length === 0 ? [
       { id: 0, foodName, price: parseFloat(price), vipPrice: parseFloat(vipPrice) },
     ] : [
@@ -163,7 +163,7 @@ app.post('/add_menus', (req, res) => {
   })
 })
 
-const ordersSchema = new mongoose.Schema({
+const ordersSchema = new mongoose.Schema({//orders数据表
   id: Number,
   tableName: String,
   orderTime: String,
