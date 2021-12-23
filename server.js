@@ -4,7 +4,9 @@ const fs = require('fs')
 // const axios = require('axios');
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://127.0.0.1:27017/menu');//连接menu数据库
+mongoose.connect('mongodb://172.21.2.236:27017/190110910503');//连接学号数据库，部署到老师服务器
+//mongoose.connect('mongodb://localhost:27017/menu');//连接menu数据库
+
 const db = mongoose.connection;
 
 const tableSchema = new mongoose.Schema({//tables数据表
